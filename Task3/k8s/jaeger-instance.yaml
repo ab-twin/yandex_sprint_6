@@ -1,0 +1,24 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: simplest
+  namespace: observability
+spec:
+  strategy: allInOne
+  storage:
+    type: memory
+    options:
+      memory:
+        max-traces: 100000
+  ingress:
+    enabled: false
+  agent:
+    options:
+      otlp:
+        enabled: true  # Включаем OTLP приемник
+        grpc:
+          enabled: true
+          host-port: ":4317"
+        http:
+          enabled: true
+          host-port: ":4318"

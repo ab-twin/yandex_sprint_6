@@ -1,0 +1,23 @@
+@startuml
+actor Op as "Operator"
+participant UI as "MES UI (Browser)"
+participant API as "MES API"
+participant Cache as "Redis Cache"
+database DB as "MES DB"
+
+Op -> UI: Open "Orders" page
+UI -> API: GET /orders?status=NEW&page=1
+API -> Cache: GET key=orders:list:status=NEW:page=1
+
+alt cache hit
+    Cache --> API: orders list
+    API --> UI: 200 OK + orders list
+else cache miss
+    Cache --> API: MISS
+    API -> DB: SELECT ... \nFROM orders \nWHERE status=NEW LIMIT ...
+    DB --> API: orders list
+    API -> Cache: SET \nkey=... value=orders list TTL=30s
+    API --> UI: 200 OK + orders list
+end
+
+@enduml
