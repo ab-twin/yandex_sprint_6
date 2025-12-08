@@ -1,0 +1,21 @@
+@startuml
+actor Op as "Operator"
+participant UI as "MES UI (Browser)"
+participant API as "MES API"
+participant Cache as "Redis Cache"
+database DB as "MES DB"
+
+Op -> UI: Click "Start order"
+UI -> API: POST /orders/{id}/status\n{ status: MANUFACTURING_STARTED }
+
+API -> DB: UPDATE orders\nSET status=...\nWHERE id={id}
+DB --> API: OK
+
+API -> Cache: DEL orders:item:{id}
+API -> Cache: DEL orders:list:status=NEW:page=*
+API -> Cache: DEL orders:list:status=IN_PROGRESS:operator={opId}:page=*
+
+API --> UI: 200 OK
+UI --> Op: Status updated
+
+@enduml
